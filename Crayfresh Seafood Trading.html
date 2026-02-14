@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crayfresh Seafood Trading | Premium Crayfish Supplier</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js" type="module"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            light: '#FFF8F0',
+                            orange: '#E65100', // Signature Orange
+                            blue: '#154360',   // Professional Navy
+                            gray: '#4A4A4A',
+                            soft: '#F5F5F5'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #FFF8F0;
+            color: #333;
+        }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 400px;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        .value-card {
+            transition: all 0.3s ease;
+        }
+        .value-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .step-item {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        .step-item.active {
+            border-left: 4px solid #E65100;
+            background-color: white;
+        }
+
+        #success-message {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex-shrink-0">
+                    <div>
+                        <h1 class="font-serif text-2xl font-bold text-brand-orange tracking-tight">CRAYFRESH</h1>
+                        <p class="text-[10px] text-brand-blue font-bold tracking-[0.25em] uppercase -mt-1">Seafood Trading</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#about" class="text-gray-600 hover:text-brand-orange px-3 py-2 rounded-md text-sm font-medium transition">About</a>
+                    <a href="#values" class="text-gray-600 hover:text-brand-orange px-3 py-2 rounded-md text-sm font-medium transition">Values</a>
+                    <a href="#quality" class="text-gray-600 hover:text-brand-orange px-3 py-2 rounded-md text-sm font-medium transition">Quality</a>
+                    <a href="#contact" class="bg-brand-orange text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-orange-700 transition shadow-md">Partner With Us</a>
+                </div>
+                <div class="flex items-center md:hidden">
+                    <button id="mobile-menu-btn" class="text-gray-600 hover:text-brand-orange">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#about" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-orange hover:bg-gray-50">About</a>
+                <a href="#values" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-orange hover:bg-gray-50">Values</a>
+                <a href="#quality" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-orange hover:bg-gray-50">Quality</a>
+                <a href="#contact" class="block px-3 py-2 rounded-md text-base font-medium text-brand-orange font-bold">Contact Us</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative bg-brand-blue text-white overflow-hidden">
+        <div class="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1559742811-822873691df8?q=80&w=2574&auto=format&fit=crop')] bg-cover bg-center"></div>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 flex flex-col items-center text-center">
+            <span class="inline-block py-1 px-3 rounded-full bg-brand-orange/20 border border-brand-orange text-orange-200 text-xs font-semibold tracking-wider mb-4 uppercase">Est. 2024 &bull; Calumpit, Bulacan</span>
+            <h1 class="text-4xl md:text-6xl font-serif font-bold mb-6 leading-tight">
+                Philippines' Premium Source for <br>
+                <span class="text-brand-orange">Exceptional Crayfish</span>
+            </h1>
+            <p class="max-w-2xl text-lg md:text-xl text-gray-300 mb-10 font-light leading-relaxed">
+                Providing restaurants with consistent, high-quality seafood supply. We bridge the gap between fresh harvest and your culinary masterpieces.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <a href="#contact" class="bg-brand-orange text-white px-8 py-3 rounded-full font-semibold hover:bg-orange-700 transition shadow-lg transform hover:-translate-y-1">
+                    Get a Quote
+                </a>
+                <a href="#quality" class="bg-transparent border border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-brand-blue transition">
+                    Our Standards
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        <!-- Section 1: About -->
+        <section id="about" class="py-20 bg-brand-light">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-sm font-bold text-brand-orange uppercase tracking-wider">Who We Are</h2>
+                    <h3 class="mt-2 text-3xl leading-8 font-serif font-extrabold text-brand-blue sm:text-4xl">Defining Seafood Excellence</h3>
+                </div>
+                <div class="max-w-4xl mx-auto">
+                    <div class="flex justify-center mb-8 gap-4">
+                        <button onclick="switchContent('vision')" id="btn-vision" class="px-6 py-2 rounded-full border-2 border-brand-blue bg-brand-blue text-white font-semibold transition focus:outline-none">
+                            Our Vision
+                        </button>
+                        <button onclick="switchContent('mission')" id="btn-mission" class="px-6 py-2 rounded-full border-2 border-brand-blue text-brand-blue font-semibold hover:bg-blue-50 transition focus:outline-none">
+                            Our Mission
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center" id="content-display">
+                        <div id="vision-content" class="block">
+                            <div class="inline-flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 text-brand-blue mb-6">
+                                <i class="fa-solid fa-eye text-2xl"></i>
+                            </div>
+                            <h4 class="text-2xl font-bold text-gray-900 mb-4">Premier Supplier of Quality</h4>
+                            <p class="text-lg text-gray-600 leading-relaxed italic">
+                                "Crayfresh aims to focus to be a premier supplier of fresh and exceptionally high-quality crayfish in the Philippines."
+                            </p>
+                        </div>
+                        <div id="mission-content" class="hidden">
+                            <div class="inline-flex items-center justify-center h-16 w-16 rounded-full bg-orange-100 text-brand-orange mb-6">
+                                <i class="fa-solid fa-truck-fast text-2xl"></i>
+                            </div>
+                            <h4 class="text-2xl font-bold text-gray-900 mb-4">Reliability for Restaurants</h4>
+                            <p class="text-lg text-gray-600 leading-relaxed italic">
+                                "To provide restaurants in the Philippines with access to premium-quality crayfish, ensuring a consistent and reliable supply for their menus."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Values -->
+        <section id="values" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-16 text-center">
+                    <h2 class="text-3xl font-serif font-bold text-brand-blue mb-4">Our Core Values</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">Building partnerships grounded in integrity and excellence.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+                    <div class="value-card bg-brand-light p-8 rounded-xl border border-orange-100">
+                        <div class="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center text-brand-orange mx-auto mb-4"><i class="fa-solid fa-certificate text-xl"></i></div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Quality Excellence</h3>
+                        <p class="text-sm text-gray-600">Strict standards for every single harvest.</p>
+                    </div>
+                    <div class="value-card bg-brand-light p-8 rounded-xl border border-orange-100">
+                        <div class="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center text-brand-blue mx-auto mb-4"><i class="fa-solid fa-clock text-xl"></i></div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Supply Reliability</h3>
+                        <p class="text-sm text-gray-600">Consistent stock levels, every week.</p>
+                    </div>
+                    <div class="value-card bg-brand-light p-8 rounded-xl border border-orange-100">
+                        <div class="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center text-brand-orange mx-auto mb-4"><i class="fa-solid fa-handshake text-xl"></i></div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Operational Integrity</h3>
+                        <p class="text-sm text-gray-600">Honest pricing and ethical sourcing.</p>
+                    </div>
+                    <div class="value-card bg-brand-light p-8 rounded-xl border border-orange-100">
+                        <div class="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center text-brand-blue mx-auto mb-4"><i class="fa-solid fa-utensils text-xl"></i></div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Culinary Partnership</h3>
+                        <p class="text-sm text-gray-600">An extension of your restaurant team.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Quality Data -->
+        <section id="quality" class="py-20 bg-brand-blue text-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h2 class="text-sm font-bold text-brand-orange uppercase tracking-wider mb-2">The Crayfresh Standard</h2>
+                        <h3 class="text-3xl md:text-4xl font-serif font-bold mb-6">Data-Driven Quality</h3>
+                        <p class="text-blue-100 mb-8 text-lg">We benchmark our supply against general market standards to ensure your menu stands out.</p>
+                        <ul class="space-y-4">
+                            <li class="flex items-center"><i class="fa-solid fa-check text-brand-orange mr-3"></i> Size Uniformity</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-brand-orange mr-3"></i> Live Handling</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-brand-orange mr-3"></i> Optimized Logistics</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6 shadow-2xl text-gray-800">
+                        <div class="chart-container">
+                            <canvas id="qualityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Contact -->
+        <section id="contact" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="bg-brand-blue rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row">
+                    <!-- Info Side -->
+                    <div class="p-10 md:p-16 text-white md:w-1/2 flex flex-col justify-between">
+                        <div>
+                            <h2 class="text-3xl font-serif font-bold mb-6">Let's Partner Up</h2>
+                            <p class="text-blue-200 mb-8">Contact us for pricing and supply schedules.</p>
+                            <div class="space-y-6">
+                                <div class="flex items-center"><i class="fa-solid fa-location-dot text-brand-orange w-8"></i> Calumpit, Bulacan</div>
+                                <div class="flex items-center"><i class="fa-solid fa-phone text-brand-orange w-8"></i> 09205704063</div>
+                                <div class="flex items-center"><i class="fa-solid fa-envelope text-brand-orange w-8"></i> crayfreshseafoodtrading@gmail.com</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Functional Form Panel -->
+                    <div class="bg-white p-10 md:p-16 md:w-1/2">
+                        <div id="success-message" class="text-center py-10">
+                            <div class="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-check text-2xl"></i></div>
+                            <h3 class="text-xl font-bold text-brand-blue">Message Sent!</h3>
+                            <p class="text-gray-500 mt-2">Thank you. We will get back to you shortly.</p>
+                            <button onclick="resetForm()" class="mt-6 text-brand-orange font-bold text-sm">Send another message</button>
+                        </div>
+
+                        <form id="contact-form">
+                            <div class="mb-6">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Restaurant/Client Name</label>
+                                <input id="form-name" required class="appearance-none border rounded w-full py-3 px-4 focus:border-brand-orange outline-none bg-gray-50" type="text" placeholder="e.g., The Seafood Place">
+                            </div>
+                            <div class="mb-6">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
+                                <input id="form-email" required class="appearance-none border rounded w-full py-3 px-4 focus:border-brand-orange outline-none bg-gray-50" type="email" placeholder="you@example.com">
+                            </div>
+                            <div class="mb-6">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Inquiry</label>
+                                <textarea id="form-message" required rows="4" class="appearance-none border rounded w-full py-3 px-4 focus:border-brand-orange outline-none bg-gray-50" placeholder="Tell us about your needs..."></textarea>
+                            </div>
+                            <button id="submit-btn" class="bg-brand-orange text-white font-bold py-3 px-6 rounded-full w-full hover:bg-orange-700 transition shadow-lg flex items-center justify-center gap-2" type="submit">
+                                Send Message
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-brand-gray text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <h2 class="font-serif font-bold text-xl text-brand-orange mb-4">CRAYFRESH</h2>
+            <div class="flex flex-col md:flex-row justify-center gap-4 text-sm text-gray-400 mb-6">
+                <span><i class="fa-solid fa-phone mr-2"></i>09205704063</span>
+                <span><i class="fa-solid fa-envelope mr-2"></i>crayfreshseafoodtrading@gmail.com</span>
+            </div>
+            <p class="text-gray-400 text-xs">&copy; 2024 Crayfresh Seafood Trading. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Firebase Logic -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'crayfresh-seafood';
+
+        window.resetForm = () => {
+            document.getElementById('contact-form').style.display = 'block';
+            document.getElementById('success-message').style.display = 'none';
+            document.getElementById('contact-form').reset();
+        };
+
+        const form = document.getElementById('contact-form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Sending...';
+            try {
+                await signInAnonymously(auth);
+                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'inquiries');
+                await addDoc(colRef, {
+                    name: document.getElementById('form-name').value,
+                    email: document.getElementById('form-email').value,
+                    message: document.getElementById('form-message').value,
+                    timestamp: serverTimestamp()
+                });
+                form.style.display = 'none';
+                document.getElementById('success-message').style.display = 'block';
+            } catch (err) {
+                console.error(err);
+                alert("Failed to send. Please try again or email us directly.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Send Message';
+            }
+        });
+    </script>
+
+    <script>
+        document.getElementById('mobile-menu-btn').onclick = () => document.getElementById('mobile-menu').classList.toggle('hidden');
+        function switchContent(type) {
+            document.getElementById('vision-content').classList.toggle('hidden', type !== 'vision');
+            document.getElementById('mission-content').classList.toggle('hidden', type !== 'mission');
+            document.getElementById('btn-vision').className = type === 'vision' ? 'px-6 py-2 rounded-full border-2 border-brand-blue bg-brand-blue text-white font-semibold' : 'px-6 py-2 rounded-full border-2 border-brand-blue text-brand-blue font-semibold hover:bg-blue-50';
+            document.getElementById('btn-mission').className = type === 'mission' ? 'px-6 py-2 rounded-full border-2 border-brand-blue bg-brand-blue text-white font-semibold' : 'px-6 py-2 rounded-full border-2 border-brand-blue text-brand-blue font-semibold hover:bg-blue-50';
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('qualityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Freshness', 'Size Consistency', 'Price Stability', 'Supply Reliability', 'Taste Profile'],
+                    datasets: [{
+                        label: 'Crayfresh Standard',
+                        data: [95, 90, 85, 95, 90],
+                        backgroundColor: 'rgba(230, 81, 0, 0.2)',
+                        borderColor: '#E65100',
+                        pointBackgroundColor: '#E65100'
+                    }, {
+                        label: 'Market Average',
+                        data: [70, 60, 65, 70, 75],
+                        backgroundColor: 'rgba(21, 67, 96, 0.1)',
+                        borderColor: '#154360',
+                        borderDash: [5, 5]
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { r: { suggestedMin: 50, suggestedMax: 100 } } }
+            });
+        });
+    </script>
+</body>
+</html>
